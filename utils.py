@@ -17,7 +17,7 @@ from typing import Dict, Iterable, Union, Optional, List
 @DatasetReader.register("char_lang_mod")
 class CharDatasetReader(DatasetReader):
     def __init__(self) -> None:
-        
+        super().__init__(lazy=False)
         #todo: could become args
         self._token_indexers = {'tokens': SingleIdTokenIndexer()}
         self._tokenizer = CharacterTokenizer()
@@ -26,7 +26,6 @@ class CharDatasetReader(DatasetReader):
     def text_to_instance(self, sentence: str,) -> Instance:
         
         tokenized = self._tokenizer.tokenize(sentence)
-        #TODO: add start and end characters
         #TODO: do you want to add "source" and "target" here? 
         instance = Instance({"source": TextField(tokenized, self._token_indexers)})
         return instance
