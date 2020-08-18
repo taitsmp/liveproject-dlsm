@@ -30,10 +30,14 @@ class CharDatasetReader(DatasetReader):
         instance = Instance({"source": TextField(tokenized, self._token_indexers)})
         return instance
     
-    def _read(self, df: pd.DataFrame) -> Iterable[Instance]:
+    def _read(self, csv_file: str) -> Iterable[Instance]:
         
-        for row in df.itertuples(index=False):
+        df = pd.read_csv(csv_file)
+        df_titles = df[df.category == 'title']
+
+        for row in df_titles.itertuples(index=False):
             instance = self.text_to_instance(row.text)
             yield instance
+
 
 
