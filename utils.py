@@ -63,3 +63,5 @@ class CharLanguageModel(Model)
             pass
 
 #left off here. Review what forward looks like in sample AllenNLP language model.
+# AllenNLP Language Model Implementation uses softmaxloss - https://docs.allennlp.org/master/api/modules/softmax_loss/
+# this is where they get the targets from the tokens/sources - https://github.com/allenai/allennlp-models/blob/master/allennlp_models/lm/models/language_model.py#L265
