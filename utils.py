@@ -14,7 +14,7 @@ from torch.nn import LSTM
 
 from typing import Dict, Iterable, Union, Optional, List
 
-@DatasetReader.register("char_lang_mod")
+@DatasetReader.register("char_lm_reader")
 class CharDatasetReader(DatasetReader):
     def __init__(self) -> None:
         super().__init__(lazy=False)
@@ -39,5 +39,27 @@ class CharDatasetReader(DatasetReader):
             instance = self.text_to_instance(row.text)
             yield instance
 
+@Model.register('char_lm_model')
+class CharLanguageModel(Model)
+  def __init__(self,
+          vocab: Vocabulary,
+          embedder: TextFieldEmbedder,
+          encoder: Seq2SeqEncoder, #you pass in the model with layers here. LSTM, etc.
+          )
+    super().__init__(vocab)
+    self.embedder = embedder
+    self.encoder = encoder
+
+    num_labels = vocab.get_vocab_size("source")
+    self.classifier = torch.nn.Linear(encoder.get_output_dim(), num_labels)
+
+# how to get the correct vocab size? https://guide.allennlp.org/reading-data#3
 
 
+    def forward(self,
+                tokens:   Dict[str, torch.Tensor],
+                next_tokens: Optional[torch.Tensor] = None,
+                **args) -> Dict[str, torch.Tensor]:
+            pass
+
+#left off here. Review what forward looks like in sample AllenNLP language model.
