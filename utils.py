@@ -40,12 +40,12 @@ class CharDatasetReader(DatasetReader):
             yield instance
 
 @Model.register('char_lm_model')
-class CharLanguageModel(Model)
+class CharLauageModel(Model):
   def __init__(self,
           vocab: Vocabulary,
           embedder: TextFieldEmbedder,
           encoder: Seq2SeqEncoder, #you pass in the model with layers here. LSTM, etc.
-          )
+          ):
     super().__init__(vocab)
     self.embedder = embedder
     self.encoder = encoder
