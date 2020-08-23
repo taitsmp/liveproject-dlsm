@@ -1,17 +1,19 @@
 from allennlp.models import Model
+
 from allennlp.modules.seq2vec_encoders import Seq2VecEncoder, PytorchSeq2VecWrapper
-from allennlp.data.tokenizers.character_tokenizer import CharacterTokenizer
-from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
-from allennlp.data.tokenizers import Token
+from allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
+from allennlp.modules.text_field_embedders import TextFieldEmbedder
+
+from allennlp.data import Vocabulary
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
 from allennlp.data.fields import TextField
 from allennlp.data.instance import Instance
+from allennlp.data.tokenizers import Token
+from allennlp.data.tokenizers.character_tokenizer import CharacterTokenizer
+from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 
 import pandas as pd
-
-
 from torch.nn import LSTM
-
 from typing import Dict, Iterable, Union, Optional, List
 
 @DatasetReader.register("char_lm_reader")
@@ -57,10 +59,28 @@ class CharLauageModel(Model):
 
 
     def forward(self,
-                tokens:   Dict[str, torch.Tensor],
+                tokens: TextFieldTensors,
                 next_tokens: Optional[torch.Tensor] = None,
                 **args) -> Dict[str, torch.Tensor]:
             pass
+
+   
+    def _targets(
+            self,
+            source : TextFieldTensors
+            ) -> torch.Tensor:
+         
+        target = torch.zeros_like(token_ids)
+
+        token_id_dict = source.get("tokens")
+        if token_id_dict is not None:
+            token_ids = token_id_dict["tokens"]
+
+            # Use token_ids to compute targets
+            # last token id is set at zero?
+            target[:, 0:-1] = token_ids[:, 1:]
+        
+        return target
 
 #left off here. Review what forward looks like in sample AllenNLP language model.
 # AllenNLP Language Model Implementation uses softmaxloss - https://docs.allennlp.org/master/api/modules/softmax_loss/
