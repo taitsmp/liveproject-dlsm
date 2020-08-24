@@ -4,15 +4,18 @@ from allennlp.modules.seq2vec_encoders import Seq2VecEncoder, PytorchSeq2VecWrap
 from allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
 from allennlp.modules.text_field_embedders import TextFieldEmbedder
 
+
 from allennlp.data import Vocabulary
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
 from allennlp.data.fields import TextField
+from allennlp.data.fields.text_field import TextFieldTensors
 from allennlp.data.instance import Instance
 from allennlp.data.tokenizers import Token
 from allennlp.data.tokenizers.character_tokenizer import CharacterTokenizer
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 
 import pandas as pd
+import torch
 from torch.nn import LSTM
 from typing import Dict, Iterable, Union, Optional, List
 
@@ -57,31 +60,39 @@ class CharLauageModel(Model):
 
 # how to get the correct vocab size? https://guide.allennlp.org/reading-data#3
 
+    def forward(
+            self,
+            tokens: TextFieldTensors,
+            next_tokens: Optional[torch.Tensor] = None,
+            **args
+            ) -> Dict[str, torch.Tensor]:
 
-    def forward(self,
-                tokens: TextFieldTensors,
-                next_tokens: Optional[torch.Tensor] = None,
-                **args) -> Dict[str, torch.Tensor]:
-            pass
+        output: Dict[str, torch.Tensor] = {}
 
+        target = self._target(tokens)
+
+        #TODO: calculate the loss 
+        output['loss'] = None
+        return output
    
-    def _targets(
+    def _target(
             self,
             source : TextFieldTensors
             ) -> torch.Tensor:
          
-        target = torch.zeros_like(token_ids)
-
+        target = None
         token_id_dict = source.get("tokens")
         if token_id_dict is not None:
             token_ids = token_id_dict["tokens"]
 
             # Use token_ids to compute targets
             # last token id is set at zero?
+            target = torch.zeroes_like(token_ids)
             target[:, 0:-1] = token_ids[:, 1:]
         
         return target
 
 #left off here. Review what forward looks like in sample AllenNLP language model.
+# - do you need to use a mask?
 # AllenNLP Language Model Implementation uses softmaxloss - https://docs.allennlp.org/master/api/modules/softmax_loss/
 # this is where they get the targets from the tokens/sources - https://github.com/allenai/allennlp-models/blob/master/allennlp_models/lm/models/language_model.py#L265
