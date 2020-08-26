@@ -71,6 +71,12 @@ class CharLauageModel(Model):
 
         target = self._target(tokens)
 
+        #run NN layers forward
+        embedded    = self.embedder(tokens)
+        encoded     = self.encoder(embedded, mask)
+        char_logits = self.classifier(encoded)
+        #LEFT OFF HERE
+
         #TODO: calculate the loss 
         output['loss'] = None
         return output
@@ -94,5 +100,7 @@ class CharLauageModel(Model):
 
 #left off here. Review what forward looks like in sample AllenNLP language model.
 # - do you need to use a mask?
+#   + https://mlexplained.com/2019/01/30/an-in-depth-tutorial-to-allennlp-from-basics-to-elmo-and-bert/
+#   + review get get_text_field_mask() function
 # AllenNLP Language Model Implementation uses softmaxloss - https://docs.allennlp.org/master/api/modules/softmax_loss/
 # this is where they get the targets from the tokens/sources - https://github.com/allenai/allennlp-models/blob/master/allennlp_models/lm/models/language_model.py#L265
