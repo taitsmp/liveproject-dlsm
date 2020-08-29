@@ -14,6 +14,9 @@ from allennlp.data.tokenizers import Token
 from allennlp.data.tokenizers.character_tokenizer import CharacterTokenizer
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 
+from allennlp.nn.util import get_text_field_mask
+
+
 import pandas as pd
 import torch
 from torch.nn import LSTM
@@ -68,6 +71,7 @@ class CharLauageModel(Model):
             ) -> Dict[str, torch.Tensor]:
 
         output: Dict[str, torch.Tensor] = {}
+        mask = get_text_field_mask(tokens)  #mask of 0 or 1 for padding or token
 
         target = self._target(tokens)
 
