@@ -14,27 +14,26 @@ from allennlp.data.tokenizers import Token
 from allennlp.data.tokenizers.character_tokenizer import CharacterTokenizer
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 
-from allennlp.nn.util import get_text_field_mask
-
+from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_logits
 
 import pandas as pd
 import torch
 from torch.nn import LSTM
 from typing import Dict, Iterable, Union, Optional, List
 
+
 @DatasetReader.register("char_lm_reader")
 class CharDatasetReader(DatasetReader):
     def __init__(self) -> None:
         super().__init__(lazy=False)
-        #todo: could become args
+        # todo: could become args
         self._token_indexers = {'tokens': SingleIdTokenIndexer()}
         self._tokenizer = CharacterTokenizer()
         
-
     def text_to_instance(self, sentence: str,) -> Instance:
         
         tokenized = self._tokenizer.tokenize(sentence)
-        #TODO: do you want to add "source" and "target" here? 
+        # TODO: do you want to add "source" and "target" here? 
         instance = Instance({"source": TextField(tokenized, self._token_indexers)})
         return instance
     
@@ -47,48 +46,53 @@ class CharDatasetReader(DatasetReader):
             instance = self.text_to_instance(row.text)
             yield instance
 
-@Model.register('char_lm_model')
-class CharLauageModel(Model):
-  def __init__(self,
-          vocab: Vocabulary,
-          embedder: TextFieldEmbedder,
-          encoder: Seq2SeqEncoder, #you pass in the model with layers here. LSTM, etc.
-          ):
-    super().__init__(vocab)
-    self.embedder = embedder
-    self.encoder = encoder
 
-    num_labels = vocab.get_vocab_size("source")
-    self.classifier = torch.nn.Linear(encoder.get_output_dim(), num_labels)
+@Model.register('char_lm_model')
+class CharLanguageModel(Model):
+    def __init__(self,
+                 vocab: Vocabulary,
+                 embedder: TextFieldEmbedder,
+                 encoder: Seq2SeqEncoder,  # you pass in the model with layers here. LSTM, etc.
+                 ):
+        super().__init__(vocab)
+        self.embedder = embedder
+        self.encoder = encoder
+
+        num_labels = vocab.get_vocab_size("source")
+        self.classifier = torch.nn.Linear(encoder.get_output_dim(), num_labels)
 
 # how to get the correct vocab size? https://guide.allennlp.org/reading-data#3
 
-    def forward(
-            self,
-            tokens: TextFieldTensors,
-            next_tokens: Optional[torch.Tensor] = None,
-            **args
-            ) -> Dict[str, torch.Tensor]:
+    def forward(self,
+                tokens: TextFieldTensors,
+                next_tokens: Optional[torch.Tensor] = None,
+                **args
+                ) -> Dict[str, torch.Tensor]:
 
         output: Dict[str, torch.Tensor] = {}
-        mask = get_text_field_mask(tokens)  #mask of 0 or 1 for padding or token
+        mask = get_text_field_mask(tokens)  # mask of 0 or 1 for padding or token
 
-        target = self._target(tokens)
+        targets = self._target(tokens)
 
-        #run NN layers forward
+        # run NN layers forward
         embedded    = self.embedder(tokens)
         encoded     = self.encoder(embedded, mask)
         char_logits = self.classifier(encoded)
-        #LEFT OFF HERE
 
-        #TODO: calculate the loss 
-        output['loss'] = None
+        # calculate the loss 
+        output['loss'] = self._loss(char_logits, targets, mask)
         return output
    
-    def _target(
-            self,
-            source : TextFieldTensors
-            ) -> torch.Tensor:
+    def _loss(char_logits: torch.Tensor,
+              targets: torch.Tensor,
+              mask: torch.BoolTensor
+              ) -> torch.FloatTensor:
+        loss = sequence_cross_entropy_with_logits(char_logits, targets, mask)
+        return loss
+
+    def _target(self,
+                source: TextFieldTensors
+                ) -> torch.Tensor:
          
         target = None
         token_id_dict = source.get("tokens")
@@ -97,12 +101,12 @@ class CharLauageModel(Model):
 
             # Use token_ids to compute targets
             # last token id is set at zero?
-            target = torch.zeroes_like(token_ids)
+            target = torch.zeros_like(token_ids)
             target[:, 0:-1] = token_ids[:, 1:]
         
         return target
 
-#left off here. Review what forward looks like in sample AllenNLP language model.
+# left off here. Review what forward looks like in sample AllenNLP language model.
 # - do you need to use a mask?
 #   + https://mlexplained.com/2019/01/30/an-in-depth-tutorial-to-allennlp-from-basics-to-elmo-and-bert/
 #   + review get get_text_field_mask() function
