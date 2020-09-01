@@ -1,8 +1,8 @@
 from allennlp.models import Model
 
 from allennlp.modules.seq2vec_encoders import Seq2VecEncoder, PytorchSeq2VecWrapper
-from allennlp.modules.seq2seq_encoders.seq2seq_encoder import Seq2SeqEncoder
-from allennlp.modules.text_field_embedders import TextFieldEmbedder
+from allennlp.modules.seq2seq_encoders import Seq2SeqEncoder, PytorchSeq2SeqWrapper
+from allennlp.modules.text_field_embedders import TextFieldEmbedder, BasicTextFieldEmbedder
 from allennlp.modules.token_embedders import Embedding
 
 from allennlp.data import Vocabulary
