@@ -1,5 +1,7 @@
 from allennlp.models import Model
 
+from allennlp.training.trainer import Trainer
+
 from allennlp.modules.seq2vec_encoders import Seq2VecEncoder, PytorchSeq2VecWrapper
 from allennlp.modules.seq2seq_encoders import Seq2SeqEncoder, PytorchSeq2SeqWrapper
 from allennlp.modules.text_field_embedders import TextFieldEmbedder, BasicTextFieldEmbedder
@@ -18,6 +20,7 @@ from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_lo
 
 import pandas as pd
 import torch
+import torch.optim as optim
 from torch.nn import LSTM
 from typing import Dict, Iterable, Union, Optional, List
 
