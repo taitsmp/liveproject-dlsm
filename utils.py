@@ -68,18 +68,17 @@ class CharLanguageModel(Model):
 # how to get the correct vocab size? https://guide.allennlp.org/reading-data#3
 
     def forward(self,
-                tokens: TextFieldTensors,
-                next_tokens: Optional[torch.Tensor] = None,
+                source: TextFieldTensors,
                 **args
                 ) -> Dict[str, torch.Tensor]:
 
         output: Dict[str, torch.Tensor] = {}
-        mask = get_text_field_mask(tokens)  # mask of 0 or 1 for padding or token
+        mask = get_text_field_mask(source)  # mask of 0 or 1 for padding or token
 
-        targets = self._target(tokens)
+        targets = self._target(source)
 
         # run NN layers forward
-        embedded    = self.embedder(tokens)
+        embedded    = self.embedder(source)
         encoded     = self.encoder(embedded, mask)
         char_logits = self.classifier(encoded)
 
