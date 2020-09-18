@@ -91,7 +91,6 @@ class CharLanguageModel(Model):
               targets: torch.Tensor,
               mask: torch.BoolTensor
               ) -> torch.FloatTensor:
-        print(char_logits.shape, targets.shape, mask.shape)
         loss = sequence_cross_entropy_with_logits(char_logits, targets, mask)
         return loss
 
