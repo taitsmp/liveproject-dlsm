@@ -31,7 +31,7 @@ class CharDatasetReader(DatasetReader):
     def __init__(self) -> None:
         super().__init__(lazy=False)
         # todo: could become args
-        self._token_indexers = {'tokens': SingleIdTokenIndexer()}
+        self._token_indexers = {'tokens': SingleIdTokenIndexer()} #'tokens' is the namespace we're using
         self._tokenizer = CharacterTokenizer()
         
     def text_to_instance(self, sentence: str,) -> Instance:
@@ -62,7 +62,7 @@ class CharLanguageModel(Model):
         self.embedder = embedder
         self.encoder = encoder
 
-        num_labels = vocab.get_vocab_size("source")
+        num_labels = vocab.get_vocab_size("tokens") #get from the tokens namespace
         self.classifier = torch.nn.Linear(encoder.get_output_dim(), num_labels)
 
 # how to get the correct vocab size? https://guide.allennlp.org/reading-data#3
