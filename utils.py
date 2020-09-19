@@ -107,8 +107,16 @@ class CharLanguageModel(Model):
             # last token id is set at zero?
             target = torch.zeros_like(token_ids)
             target[:, 0:-1] = token_ids[:, 1:]
-        
+     
         return target
+
+
+def predict(model, reader, text):
+
+    instance = reader.text_to_instance(text)
+    output = model.forward_on_instance(instance)
+    return output
+
 
 # left off here. Review what forward looks like in sample AllenNLP language model.
 # - do you need to use a mask?
